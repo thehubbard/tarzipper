@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#         FILE: tarzipper
+#
+#        USAGE: tarzipper
+#
+#  DESCRIPTION: Menu for turning directories into a tar archive and compressing
+#               with gzip using a maximum compression level of 9
+#               Only works in current working directory.
+#               No option yet to combine multiple directories into single tar.gz
+#
+#      OPTIONS: ---
+# REQUIREMENTS: ---
+#         BUGS: ---
+#        NOTES: Directories named all or quit are not compatible currently
+#       AUTHOR: Dr. Michael Hubbard <github.com/thehubbard>
+#      VERSION: 1.0.0
+#      CREATED: 2022-02-02
+#     REVISION: 
+#===============================================================================
+
+#=== FUNCTION ==================================================================
+#        Name: targzip
+# Description: tar.gzs a directory and saves with the same name
+#   Arguments: Directory
+#     Outputs: tag.gz file with directory name
+#===============================================================================
+targzip() {
+    echo "Performing tar.gz, gzip level 9, on $1"
+    tar --use-compress-program='gzip -9' -cvf ${1::-1}.tar.gz $1
+}
+
+echo "#########################################################################"
+echo "#                                                                       #"
+echo "#         ████████╗ █████╗ ██████╗                                      #"
+echo "#         ╚══██╔══╝██╔══██╗██╔══██╗                                     #"
+echo "#            ██║   ███████║██████╔╝                                     #"
+echo "#            ██║   ██╔══██║██╔══██╗                                     #"
+echo "#            ██║   ██║  ██║██║  ██║                                     #"
+echo "#            ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝                                     #"
+echo "#                                                                       #"
+echo "#         ███████╗██╗██████╗ ██████╗ ███████╗██████╗                    #"
+echo "#         ╚══███╔╝██║██╔══██╗██╔══██╗██╔════╝██╔══██╗                   #"
+echo "#           ███╔╝ ██║██████╔╝██████╔╝█████╗  ██████╔╝                   #"
+echo "#          ███╔╝  ██║██╔═══╝ ██╔═══╝ ██╔══╝  ██╔══██╗                   #"
+echo "#         ███████╗██║██║     ██║     ███████╗██║  ██║                   #"
+echo "#         ╚══════╝╚═╝╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝                   #"
+echo "#                                                                       #"
+echo "#########################################################################"
+echo "#########################################################################"
+echo "# Select an option via a numerical id.                                  #"
+echo "# Multiple directories can be selected by placing a space between the   #"
+echo "# numbers. Multiple directories are compressed individually and not     #"
+echo "# together                                                              #"
+echo "#########################################################################"
+
+options=(*/)
+nopts=${#options[@]} 
+
+select option in "${options[@]}" "all" "quit"; do
+  if [[ "${option}" == "all" ]]; then
+    echo "Performing tar.gz, gzip level 9, on all directories!";
+    for i in "${options[@]}"; do
+      targzip $i
+    done
+  elif [[ "${option}" == "quit" ]]; then
+    echo "Exit";
+  # Check if option in options array
+  elif [[ " ${options[*]} " =~ " ${option} " ]]; then
+    targzip $option
+  else
+    # Catch option that was not in select list
+    catch_array=(${REPLY});
+    for var in "${catch_array[@]}"; do
+      if ! [[ "${var}" =~ ^[0-9]+$ ]]; then
+        echo "${var} is not an integer. Skipping."
+      elif [[ $var -gt $nopts ]]; then
+        echo "${var} is not recognised as a valid numerical id. Skipping."
+      elif [[ " ${options[*]} " =~ " ${options[$var-1]} " ]]; then
+        targzip ${options[$var-1]}
+      fi
+    done
+  fi
+  break;
+done
